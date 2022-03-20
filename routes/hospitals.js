@@ -9,6 +9,12 @@ const {
   deleteHospital
 } = require("../controllers/hospitals");
 
+//Include other resource routers
+const appointmentRouter = require("./appointments");
+
+//Re-route into other resource routers
+router.use("/:hospitalId/appointments/", appointmentRouter);
+
 router
   .route("/")
   .get(getHospitals)
