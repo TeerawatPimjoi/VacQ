@@ -2,6 +2,13 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser");
+const mongoSanitizer = require('express-mongo-sanitize');
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
+const cors = require("cors");
+
 
 //Load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -18,6 +25,30 @@ connectDB();
 app.use(express.json());
 // Cookie parser
 app.use(cookieParser());
+//sanitize
+app.use(mongoSanitizer());
+
+//srt security header
+app.use(helmet());
+
+//prevent xss attacks
+app.use(xss());
+
+//Rate Limiting
+const limiter =  rateLimit({
+  windowsMs : 10*60*1000 ,// 10 mins
+  max:100
+})
+app.use(limiter);
+
+//prevent http param pollutions
+app.use(hpp());
+
+//enable CORS
+app.use(cors());
+
+
+
 
 //Mount routers
 app.use("/api/v1/hospitals", hospitals);
@@ -36,3 +67,5 @@ process.on("unhandleRejection", (err, Promise) => {
   //close server and exit process
   server.close(() => process.exit(1));
 });
+
+
